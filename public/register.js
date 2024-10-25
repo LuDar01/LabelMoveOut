@@ -5,7 +5,10 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     const errorMessage = document.getElementById('error_message');
-
+    console.log(email);
+    console.log(username);
+    console.log(password);
+    
     // Simple password validation
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,}$/;
     if (!passwordRegex.test(password)) {

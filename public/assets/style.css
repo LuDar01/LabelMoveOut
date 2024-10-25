@@ -1,6 +1,20 @@
 /* Reset some basic styles */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
 @import url('labels.css');
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #label-container, #label-container * {
+        visibility: visible;
+    }
+    #label-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+}
 
 * {
     margin: 0;

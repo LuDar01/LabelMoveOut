@@ -10,6 +10,7 @@ const multer = require('multer');
 const AWS = require('aws-sdk');
 const QRCode = require('qrcode');
 const fs = require('fs');
+const { log } = require('console');
 
 dotenv.config();  // Load environment variables
 
@@ -110,7 +111,10 @@ const s3 = new AWS.S3({
 // Route to handle label creation
 // Route to handle label creation
 app.post('/create-label', upload.single('file'), (req, res) => {
-    const { labelType, description } = req.body;
+    console.log('Request Body:', req.body);  // Log the request body to confirm received data
+    console.log('Uploaded File:', req.file); // Log the file object
+
+    const { labelType, description, iconClass } = req.body;
     const file = req.file;
 
     if (!file) {
@@ -129,25 +133,29 @@ app.post('/create-label', upload.single('file'), (req, res) => {
             return res.status(500).json({ error: 'File upload failed' });
         }
 
-        // Save label info to DB
-        const sql = `INSERT INTO labels (type, description, file_url) VALUES (?, ?, ?)`;
-        db.query(sql, [labelType, description, data.Location], (err, result) => {
+        fs.unlink(file.path, (err) => {
+            if (err) console.error('Error deleting local file:', err);
+        });
+
+        const sql = `INSERT INTO labels (type, description, iconClass, file_url) VALUES (?, ?, ?, ?)`;
+        db.query(sql, [labelType, description, iconClass, data.Location], (err, result) => {
             if (err) return res.status(500).json({ error: 'Database error' });
 
-            // Generate QR code
-            QRCode.toDataURL(`http://localhost:3000/labels/${result.insertId}`, (err, url) => {
+            const qrCodeUrl = `http://localhost:3000/labels/${result.insertId}`;
+            QRCode.toDataURL(qrCodeUrl, (err, url) => {
                 if (err) return res.status(500).json({ error: 'QR generation failed' });
-
-                // Update the label with the QR code URL
-                const updateSql = `UPDATE labels SET file_url = ? WHERE id = ?`;
+            
+                const updateSql = `UPDATE labels SET qr_code_url = ? WHERE id = ?`;
                 db.query(updateSql, [url, result.insertId], (err) => {
                     if (err) return res.status(500).json({ error: 'Error updating label' });
-                    res.json({ message: 'Label created', qrCode: url });
+                    res.json({ message: 'Label created', qrCode: url, labelId: result.insertId });
                 });
             });
+            
         });
     });
 });
+
 
 // Route to fetch all existing labels (ADD THIS):
 app.get('/get-labels', (req, res) => {
@@ -156,7 +164,8 @@ app.get('/get-labels', (req, res) => {
         if (err) {
             return res.status(500).json({ error: 'Database error' });
         }
-        res.json(results);  // Send all labels back to the frontend
+        res.json(results);
+        // Send all labels back to the frontend
     });
 });
 
