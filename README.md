@@ -82,10 +82,4 @@ MoveOut is a web application for organizing belongings using digital labels with
 
 ## License
 
-**MIT License**
-
-© 2024 Lutfia Darouich
-
-**Permissions**: You are free to use, copy, modify, merge, publish, distribute, sublicense, and sell copies of this application.
-
-For full license details, see the [LICENSE](./LICENSE) file.
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
